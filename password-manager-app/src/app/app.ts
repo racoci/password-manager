@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PasswordGeneratorService } from './password-generator.service';
-import { ConfigService, PasswordRecord } from './config.service';
+import { ConfigService, PasswordRecord, SecurityLevel } from './config.service';
 
 @Component({
   selector: 'app-root',
@@ -26,7 +26,7 @@ export class App {
       site: this.site,
       user: this.user,
       created: this.created,
-      level: 1
+      level: SecurityLevel.Low
     };
     this.config.addRecord(rec);
   }
