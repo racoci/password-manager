@@ -1,29 +1,66 @@
 import { Injectable } from '@angular/core';
 
+export enum SecurityLevel {
+  Low = 1,
+  Medium = 2,
+  High = 3,
+  Ultra = 4
+}
+
+export interface SecurityLevelConfig {
+  level: SecurityLevel;
+  description: string;
+  defaultPRNG: string;
+  requiresMasterPassword: boolean;
+}
+
 export interface PasswordRecord {
   id: string;
   site: string;
   user: string;
   created: string;
-  level: number;
+  level: SecurityLevel;
+}
+
+export interface PasswordConfig {
+  records: PasswordRecord[];
+  mnemonicHints: any[]; // placeholder for future MnemonicHint type
+  prngAlgorithm: string;
+  userSalt: string;
+  securityLevels: SecurityLevelConfig[];
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class ConfigService {
-  private records: PasswordRecord[] = [];
+  private config: PasswordConfig = {
+    records: [],
+    mnemonicHints: [],
+    prngAlgorithm: 'SimpleHashPRNG',
+    userSalt: '',
+    securityLevels: [
+      { level: SecurityLevel.Low, description: 'Low security', defaultPRNG: 'SimpleHashPRNG', requiresMasterPassword: false },
+      { level: SecurityLevel.Medium, description: 'Medium security', defaultPRNG: 'SimpleHashPRNG', requiresMasterPassword: true },
+      { level: SecurityLevel.High, description: 'High security', defaultPRNG: 'SimpleHashPRNG', requiresMasterPassword: true },
+      { level: SecurityLevel.Ultra, description: 'Ultra security', defaultPRNG: 'SimpleHashPRNG', requiresMasterPassword: true }
+    ]
+  };
+
+  getConfig(): PasswordConfig {
+    return JSON.parse(JSON.stringify(this.config));
+  }
 
   getRecords() {
-    return [...this.records];
+    return [...this.config.records];
   }
 
   addRecord(r: PasswordRecord) {
-    this.records.push(r);
+    this.config.records.push(r);
   }
 
   async export(password: string): Promise<string> {
-    const data = JSON.stringify(this.records);
+    const data = JSON.stringify(this.config);
     const enc = new TextEncoder().encode(data);
     const pwKey = await this.deriveKey(password);
     const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -41,7 +78,7 @@ export class ConfigService {
     const pwKey = await this.deriveKey(password);
     const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, pwKey, data);
     const dec = new TextDecoder().decode(plain);
-    this.records = JSON.parse(dec) as PasswordRecord[];
+    this.config = JSON.parse(dec) as PasswordConfig;
   }
 
   private async deriveKey(password: string) {
