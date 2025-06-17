@@ -1,19 +1,15 @@
 :host {
   display: block;
   padding: 1rem;
-  color: #e0e0e0;
-  background-color: #121212;
-  font-family: Arial, sans-serif;
 }
 
-label {
-  display: block;
-  margin-bottom: 0.5rem;
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 400px;
 }
 
-input {
-  margin-left: 0.5rem;
-}
 button {
-  margin-top: 1rem;
+  align-self: start;
 }

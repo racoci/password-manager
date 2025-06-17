@@ -1,24 +1,24 @@
-<h1>Password Manager</h1>
-<form (ngSubmit)="generate()" #f="ngForm">
-  <label>
-    Site
-    <input name="site" [(ngModel)]="site" required />
-  </label>
-  <label>
-    User
-    <input name="user" [(ngModel)]="user" required />
-  </label>
-  <label>
-    Master Password
-    <input type="password" name="master" [(ngModel)]="master" />
-  </label>
-  <label>
-    Created
-    <input type="date" name="created" [(ngModel)]="created" />
-  </label>
-  <button type="submit" [disabled]="!f.form.valid">Generate</button>
+<mat-toolbar color="primary">Password Manager</mat-toolbar>
+<form (ngSubmit)="generate()" #f="ngForm" class="form">
+  <mat-form-field appearance="fill">
+    <mat-label>Site</mat-label>
+    <input matInput name="site" [(ngModel)]="site" required />
+  </mat-form-field>
+  <mat-form-field appearance="fill">
+    <mat-label>User</mat-label>
+    <input matInput name="user" [(ngModel)]="user" required />
+  </mat-form-field>
+  <mat-form-field appearance="fill">
+    <mat-label>Master Password</mat-label>
+    <input matInput type="password" name="master" [(ngModel)]="master" />
+  </mat-form-field>
+  <mat-form-field appearance="fill">
+    <mat-label>Created</mat-label>
+    <input matInput type="date" name="created" [(ngModel)]="created" />
+  </mat-form-field>
+  <button mat-raised-button color="primary" type="submit" [disabled]="!f.form.valid">Generate</button>
 </form>
 <p *ngIf="password">Generated: <code>{{password}}</code></p>
-<button (click)="exportConfig()">Export</button>
+<button mat-stroked-button (click)="exportConfig()">Export</button>
 <input type="file" (change)="importConfig($event)" />
 
