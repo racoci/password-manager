@@ -16,6 +16,12 @@
     Created
     <input type="date" name="created" [(ngModel)]="created" />
   </label>
+  <label>
+    Level
+    <select name="level" [(ngModel)]="level">
+      <option *ngFor="let lvl of levels" [ngValue]="lvl.value">{{lvl.label}}</option>
+    </select>
+  </label>
   <button type="submit" [disabled]="!f.form.valid">Generate</button>
 </form>
 <p *ngIf="password">Generated: <code>{{password}}</code></p>
