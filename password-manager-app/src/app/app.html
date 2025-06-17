@@ -1,0 +1,24 @@
+<h1>Password Manager</h1>
+<form (ngSubmit)="generate()" #f="ngForm">
+  <label>
+    Site
+    <input name="site" [(ngModel)]="site" required />
+  </label>
+  <label>
+    User
+    <input name="user" [(ngModel)]="user" required />
+  </label>
+  <label>
+    Master Password
+    <input type="password" name="master" [(ngModel)]="master" />
+  </label>
+  <label>
+    Created
+    <input type="date" name="created" [(ngModel)]="created" />
+  </label>
+  <button type="submit" [disabled]="!f.form.valid">Generate</button>
+</form>
+<p *ngIf="password">Generated: <code>{{password}}</code></p>
+<button (click)="exportConfig()">Export</button>
+<input type="file" (change)="importConfig($event)" />
+
