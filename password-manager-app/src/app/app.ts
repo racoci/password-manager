@@ -16,6 +16,14 @@ export class App {
   master = '';
   created = new Date().toISOString().substring(0,10);
   password = '';
+  level: SecurityLevel = SecurityLevel.Low;
+
+  levels = [
+    { value: SecurityLevel.Low, label: 'Low - Básico' },
+    { value: SecurityLevel.Medium, label: 'Medium - Recomendado' },
+    { value: SecurityLevel.High, label: 'High - Sensível' },
+    { value: SecurityLevel.Ultra, label: 'Ultra - Máxima Segurança' }
+  ];
 
   constructor(private gen: PasswordGeneratorService, private config: ConfigService) {}
 
@@ -26,7 +34,7 @@ export class App {
       site: this.site,
       user: this.user,
       created: this.created,
-      level: SecurityLevel.Low
+      level: this.level
     };
     this.config.addRecord(rec);
   }

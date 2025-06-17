@@ -38,7 +38,7 @@ export enum SecurityLevel {
 
 #### **Fase 3 – Abstração de PRNG**
 
-* ✅ Criar uma interface `IPseudoRandomGenerator`:
+* ⬜ Criar uma interface `IPseudoRandomGenerator`:
 
 ```ts
 export interface IPseudoRandomGenerator {
@@ -48,7 +48,7 @@ export interface IPseudoRandomGenerator {
 }
 ```
 
-* ✅ Criar implementações como:
+* ⬜ Criar implementações como:
 
 | Nome           | Método                                                                  |
 | -------------- | ----------------------------------------------------------------------- |
@@ -56,13 +56,13 @@ export interface IPseudoRandomGenerator {
 | HMACPRNG       | HMAC-based Deterministic PRNG                                           |
 | WebCryptoPRNG  | Wrapper sobre crypto.subtle (não determinístico, para futuras features) |
 
-* ✅ Deixar o `PasswordGeneratorService` usar uma PRNG injetável
+* ⬜ Deixar o `PasswordGeneratorService` usar uma PRNG injetável
 
 ---
 
 #### **Fase 4 – Gerador de Senhas Hierárquico**
 
-* ✅ Para cada nível de segurança:
+* ⬜ Para cada nível de segurança:
 
 | Nível  | Método                                                                   |
 | ------ | ------------------------------------------------------------------------ |
@@ -75,7 +75,7 @@ export interface IPseudoRandomGenerator {
 
 #### **Fase 5 – Sistema de Dicas Mnemônicas**
 
-* ✅ Criar um tipo `MnemonicHint`:
+* ⬜ Criar um tipo `MnemonicHint`:
 
 ```ts
 export interface MnemonicHint {
@@ -86,26 +86,26 @@ export interface MnemonicHint {
 }
 ```
 
-* ✅ Criar UI:
+* ⬜ Criar UI:
 
   * Sugerir palavra
   * Usuário escreve o que a palavra lembra
   * Persistir isso no config
 
-* ✅ Adicionar a lista de dicas exportáveis junto no JSON
+* ⬜ Adicionar a lista de dicas exportáveis junto no JSON
 
 ---
 
 #### **Fase 6 – Export/Import Completo (Agora Incluindo Tudo)**
 
-* ✅ O método de exportação agora exporta o objeto completo `PasswordConfig`
-* ✅ Criptografia continua sendo AES-GCM com PBKDF2, mas agora sobre o novo JSON mais completo
+* ⬜ O método de exportação agora exporta o objeto completo `PasswordConfig`
+* ⬜ Criptografia continua sendo AES-GCM com PBKDF2, mas agora sobre o novo JSON mais completo
 
 ---
 
 #### **Fase 7 – Interface de Escolha de Algoritmo e Nível**
 
-* ✅ Dropdown ou radio buttons no formulário:
+* ⬜ Dropdown ou radio buttons no formulário:
 
   * Escolher nível de segurança
   * Escolher algoritmo de PRNG
@@ -114,7 +114,7 @@ export interface MnemonicHint {
 
 #### **Fase 8 – Testes e Validação de Determinismo**
 
-* ✅ Criar uma função de "replay generation":
+* ⬜ Criar uma função de "replay generation":
 
   * Dado um config + input, re-gerar todas as senhas anteriores e conferir se bate
 

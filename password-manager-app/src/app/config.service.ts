@@ -78,7 +78,13 @@ export class ConfigService {
     const pwKey = await this.deriveKey(password);
     const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, pwKey, data);
     const dec = new TextDecoder().decode(plain);
-    this.config = JSON.parse(dec) as PasswordConfig;
+    const parsed = JSON.parse(dec) as PasswordConfig;
+    for (const rec of parsed.records) {
+      if (rec.level === undefined) {
+        (rec as PasswordRecord).level = SecurityLevel.Low;
+      }
+    }
+    this.config = parsed;
   }
 
   private async deriveKey(password: string) {
