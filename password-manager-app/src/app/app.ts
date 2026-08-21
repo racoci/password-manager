@@ -26,7 +26,45 @@ export class App {
     { value: SecurityLevel.Ultra, label: 'Ultra - Máxima Segurança' }
   ];
 
+  records: PasswordRecord[] = [];
+  searchQuery = '';
+  showMaster = false;
+  copied = false;
+
   constructor(private gen: PasswordGeneratorService, private config: ConfigService) {}
+
+  ngOnInit() {
+    this.loadRecords();
+  }
+
+  loadRecords() {
+    this.records = this.config.getRecords();
+  }
+
+  get filteredRecords(): PasswordRecord[] {
+    if (!this.searchQuery) return this.records;
+    const q = this.searchQuery.toLowerCase();
+    return this.records.filter(r => 
+      r.site.toLowerCase().includes(q) || 
+      r.user.toLowerCase().includes(q)
+    );
+  }
+
+  selectRecord(rec: PasswordRecord) {
+    this.site = rec.site;
+    this.user = rec.user;
+    this.created = rec.created;
+    this.level = rec.level;
+    this.password = ''; // Limpar senha anterior para forçar nova geração segura
+  }
+
+  deleteRecord(id: string, event: Event) {
+    event.stopPropagation(); // Evitar disparar o clique do card de seleção
+    if (confirm('Deseja realmente remover esta credencial salva?')) {
+      this.config.removeRecord(id);
+      this.loadRecords();
+    }
+  }
 
   async generate() {
     this.password = await this.gen.generate(this.site, this.user, this.master, this.created);
@@ -38,10 +76,20 @@ export class App {
       level: this.level
     };
     this.config.addRecord(rec);
+    this.loadRecords();
+  }
+
+  copyPassword() {
+    if (!this.password) return;
+    navigator.clipboard.writeText(this.password);
+    this.copied = true;
+    setTimeout(() => {
+      this.copied = false;
+    }, 2000);
   }
 
   async exportConfig() {
-    const pw = prompt('Export password') || '';
+    const pw = prompt('Digite uma senha mestra para criptografar a exportação:') || '';
     if (!pw) return;
     const data = await this.config.export(pw);
     const blob = new Blob([data], { type: 'text/plain' });
@@ -56,11 +104,18 @@ export class App {
   async importConfig(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
-    const pw = prompt('Import password') || '';
+    const pw = prompt('Digite a senha mestra usada na criptografia da exportação:') || '';
     if (!pw) return;
     const file = input.files[0];
-    const text = await file.text();
-    await this.config.import(pw, text.trim());
-    input.value = '';
+    try {
+      const text = await file.text();
+      await this.config.import(pw, text.trim());
+      this.loadRecords();
+      alert('Configuração importada com sucesso!');
+    } catch (e) {
+      alert('Erro ao descriptografar arquivo. Senha incorreta ou arquivo corrompido.');
+    } finally {
+      input.value = '';
+    }
   }
 }

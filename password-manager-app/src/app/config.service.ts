@@ -56,7 +56,13 @@ export class ConfigService {
   }
 
   addRecord(r: PasswordRecord) {
+    // Evitar duplicados pelo mesmo site e usuário
+    this.config.records = this.config.records.filter(x => !(x.site === r.site && x.user === r.user));
     this.config.records.push(r);
+  }
+
+  removeRecord(id: string) {
+    this.config.records = this.config.records.filter(r => r.id !== id);
   }
 
   async export(password: string): Promise<string> {

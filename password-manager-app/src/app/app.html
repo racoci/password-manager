@@ -1,30 +1,200 @@
-<h1>Password Manager</h1>
-<form (ngSubmit)="generate()" #f="ngForm">
-  <label>
-    Site
-    <input name="site" [(ngModel)]="site" required />
-  </label>
-  <label>
-    User
-    <input name="user" [(ngModel)]="user" required />
-  </label>
-  <label>
-    Master Password
-    <input type="password" name="master" [(ngModel)]="master" />
-  </label>
-  <label>
-    Created
-    <input type="date" name="created" [(ngModel)]="created" />
-  </label>
-  <label>
-    Level
-    <select name="level" [(ngModel)]="level">
-      <option *ngFor="let lvl of levels" [ngValue]="lvl.value">{{lvl.label}}</option>
-    </select>
-  </label>
-  <button type="submit" [disabled]="!f.form.valid">Generate</button>
-</form>
-<p *ngIf="password">Generated: <code>{{password}}</code></p>
-<button (click)="exportConfig()">Export</button>
-<input type="file" (change)="importConfig($event)" />
+<div class="app-container">
+  <!-- Header Explicativo -->
+  <header class="app-header">
+    <div class="header-logo">
+      <span class="logo-icon">🔐</span>
+      <h1>DeterminaPass</h1>
+    </div>
+    <p class="header-subtitle">
+      Gerador de senhas determinísticas de última geração. 
+      <strong>Suas senhas nunca são armazenadas em nenhum banco de dados!</strong> 
+      Elas são geradas matematicamente em tempo real usando criptografia SHA-256 a partir da sua 
+      Senha Mestra, Nome do Site/Serviço, Usuário e Data.
+    </p>
+  </header>
 
+  <div class="main-grid">
+    <!-- Coluna da Esquerda: Formulário de Geração -->
+    <section class="form-section card">
+      <h2 class="section-title"><span class="icon">⚙️</span> Configurações de Geração</h2>
+      <p class="section-desc">Insira as informações do serviço para gerar sua senha única.</p>
+
+      <form (ngSubmit)="generate()" #f="ngForm" class="modern-form">
+        <div class="form-group">
+          <label for="site">Site / Serviço <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <span class="input-icon">🌐</span>
+            <input 
+              id="site"
+              name="site" 
+              [(ngModel)]="site" 
+              placeholder="Ex: github.com" 
+              required 
+              class="form-control"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="user">Usuário / Email <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <span class="input-icon">👤</span>
+            <input 
+              id="user"
+              name="user" 
+              [(ngModel)]="user" 
+              placeholder="Ex: seu-usuario@email.com" 
+              required 
+              class="form-control"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="master">Senha Mestra <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔑</span>
+            <input 
+              id="master"
+              [type]="showMaster ? 'text' : 'password'" 
+              name="master" 
+              [(ngModel)]="master" 
+              placeholder="Sua senha mestra secreta" 
+              required
+              class="form-control"
+            />
+            <button 
+              type="button" 
+              class="toggle-password-btn" 
+              (click)="showMaster = !showMaster"
+              title="Mostrar/Ocultar Senha"
+            >
+              {{ showMaster ? '👁️' : '🙈' }}
+            </button>
+          </div>
+          <small class="helper-text">Esta senha mestra nunca é salva local ou remotamente.</small>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="created">Data de Criação</label>
+            <div class="input-wrapper">
+              <span class="input-icon">📅</span>
+              <input 
+                id="created"
+                type="date" 
+                name="created" 
+                [(ngModel)]="created" 
+                class="form-control"
+              />
+            </div>
+          </div>
+
+          <div class="form-group flex-1">
+            <label for="level">Nível de Segurança</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🛡️</span>
+              <select id="level" name="level" [(ngModel)]="level" class="form-control">
+                <option *ngFor="let lvl of levels" [ngValue]="lvl.value">{{lvl.label}}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" [disabled]="!f.form.valid" class="btn btn-primary submit-btn">
+          <span>🚀 Gerar Senha Segura</span>
+        </button>
+      </form>
+
+      <!-- Cartão de Senha Gerada (Destaque Principal) -->
+      <div *ngIf="password" class="password-display-card">
+        <div class="pwd-header">
+          <span>Senha Determinística Gerada:</span>
+          <span class="badge" [ngClass]="'badge-level-' + level">
+            🛡️ {{ level === 1 ? 'Low' : level === 2 ? 'Medium' : level === 3 ? 'High' : 'Ultra' }}
+          </span>
+        </div>
+        <div class="pwd-body">
+          <code class="generated-password">{{ password }}</code>
+          <button (click)="copyPassword()" class="btn btn-secondary copy-btn" [class.copied]="copied">
+            <span>{{ copied ? '✅ Copiado!' : '📋 Copiar' }}</span>
+          </button>
+        </div>
+        <p class="pwd-notice">Esta senha é idêntica sempre que você usar os mesmos parâmetros acima.</p>
+      </div>
+    </section>
+
+    <!-- Coluna da Direita: Gerenciador de Credenciais e Configs -->
+    <section class="records-section card">
+      <div class="records-header">
+        <h2 class="section-title"><span class="icon">📁</span> Seus Serviços Salvos</h2>
+        <div class="badge count-badge">{{ filteredRecords.length }} itens</div>
+      </div>
+      <p class="section-desc">Credenciais locais salvas na memória da sessão. Clique para carregar os parâmetros.</p>
+
+      <div class="search-bar-wrapper">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          placeholder="Filtrar por site ou usuário..." 
+          [(ngModel)]="searchQuery" 
+          class="form-control search-input"
+        />
+      </div>
+
+      <!-- Lista de registros salvos -->
+      <div class="records-list" [class.empty]="filteredRecords.length === 0">
+        <div 
+          *ngFor="let rec of filteredRecords" 
+          (click)="selectRecord(rec)" 
+          class="record-item-card"
+          [class.active]="site === rec.site && user === rec.user"
+        >
+          <div class="record-meta">
+            <span class="record-avatar">🌐</span>
+            <div class="record-details">
+              <div class="record-site">{{ rec.site }}</div>
+              <div class="record-user">{{ rec.user }}</div>
+            </div>
+          </div>
+          <div class="record-actions">
+            <span class="badge badge-mini" [ngClass]="'badge-level-' + rec.level">
+              {{ rec.level === 1 ? 'L' : rec.level === 2 ? 'M' : rec.level === 3 ? 'H' : 'U' }}
+            </span>
+            <button 
+              (click)="deleteRecord(rec.id, $event)" 
+              class="delete-record-btn" 
+              title="Excluir Credencial"
+            >
+              ❌
+            </button>
+          </div>
+        </div>
+
+        <!-- Estado vazio -->
+        <div *ngIf="filteredRecords.length === 0" class="empty-state">
+          <span class="empty-icon">📭</span>
+          <p>Nenhuma credencial encontrada.</p>
+          <small>Gere uma nova senha ou importe um backup criptografado.</small>
+        </div>
+      </div>
+
+      <!-- Footer / Ferramentas de Backup Criptografado -->
+      <div class="backup-tools">
+        <h3 class="tool-title">💾 Backup Criptografado</h3>
+        <p class="tool-desc">Exporte ou importe sua lista de serviços locais criptografada de forma segura.</p>
+        
+        <div class="backup-actions">
+          <button (click)="exportConfig()" class="btn btn-secondary flex-1">
+            <span>📥 Exportar Backup</span>
+          </button>
+          
+          <label class="btn btn-secondary flex-1 file-input-label">
+            <span>📤 Importar Backup</span>
+            <input type="file" (change)="importConfig($event)" class="hidden-file-input" />
+          </label>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
