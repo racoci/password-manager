@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PasswordGeneratorService } from './password-generator.service';
 import { ConfigService, PasswordRecord, SecurityLevel } from './config.service';
@@ -6,7 +7,7 @@ import { ConfigService, PasswordRecord, SecurityLevel } from './config.service';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
