@@ -19,7 +19,7 @@
       <h2 class="section-title"><span class="icon">⚙️</span> Configurações de Geração</h2>
       <p class="section-desc">Insira as informações do serviço para gerar sua senha única.</p>
 
-      <form (ngSubmit)="generate()" #f="ngForm" class="modern-form">
+      <form (ngSubmit)="saveRecord()" #f="ngForm" class="modern-form">
         <div class="form-group">
           <label for="site">Site / Serviço <span class="required">*</span></label>
           <div class="input-wrapper">
@@ -28,6 +28,7 @@
               id="site"
               name="site" 
               [(ngModel)]="site" 
+              (ngModelChange)="generate()"
               placeholder="Ex: github.com" 
               required 
               class="form-control"
@@ -43,6 +44,7 @@
               id="user"
               name="user" 
               [(ngModel)]="user" 
+              (ngModelChange)="generate()"
               placeholder="Ex: seu-usuario@email.com" 
               required 
               class="form-control"
@@ -59,6 +61,7 @@
               [type]="showMaster ? 'text' : 'password'" 
               name="master" 
               [(ngModel)]="master" 
+              (ngModelChange)="generate()"
               placeholder="Sua senha mestra secreta" 
               required
               class="form-control"
@@ -85,6 +88,7 @@
                 type="date" 
                 name="created" 
                 [(ngModel)]="created" 
+                (ngModelChange)="generate()"
                 class="form-control"
               />
             </div>
@@ -94,7 +98,7 @@
             <label for="level">Nível de Segurança</label>
             <div class="input-wrapper">
               <span class="input-icon">🛡️</span>
-              <select id="level" name="level" [(ngModel)]="level" class="form-control">
+              <select id="level" name="level" [(ngModel)]="level" (ngModelChange)="generate()" class="form-control">
                 <option *ngFor="let lvl of levels" [ngValue]="lvl.value">{{lvl.label}}</option>
               </select>
             </div>
@@ -102,7 +106,7 @@
         </div>
 
         <button type="submit" [disabled]="!f.form.valid" class="btn btn-primary submit-btn">
-          <span>🚀 Gerar Senha Segura</span>
+          <span>⭐ Salvar nos Favoritos</span>
         </button>
       </form>
 

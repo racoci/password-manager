@@ -55,7 +55,7 @@ export class App {
     this.user = rec.user;
     this.created = rec.created;
     this.level = rec.level;
-    this.password = ''; // Limpar senha anterior para forçar nova geração segura
+    this.generate(); // Tenta recalcular a senha instantaneamente se houver senha mestra digitada
   }
 
   deleteRecord(id: string, event: Event) {
@@ -67,7 +67,15 @@ export class App {
   }
 
   async generate() {
-    this.password = await this.gen.generate(this.site, this.user, this.master, this.created);
+    if (this.site && this.user && this.master) {
+      this.password = await this.gen.generate(this.site, this.user, this.master, this.created);
+    } else {
+      this.password = '';
+    }
+  }
+
+  async saveRecord() {
+    if (!this.site || !this.user) return;
     const rec: PasswordRecord = {
       id: Date.now().toString(),
       site: this.site,
@@ -77,6 +85,7 @@ export class App {
     };
     this.config.addRecord(rec);
     this.loadRecords();
+    alert('Serviço salvo nos favoritos locais com sucesso!');
   }
 
   copyPassword() {
