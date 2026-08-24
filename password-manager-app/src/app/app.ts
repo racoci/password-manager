@@ -68,7 +68,7 @@ export class App {
 
   async generate() {
     if (this.site && this.user && this.master) {
-      this.password = await this.gen.generate(this.site, this.user, this.master, this.created);
+      this.password = await this.gen.generate(this.site, this.user, this.master, this.created, this.level);
     } else {
       this.password = '';
     }
