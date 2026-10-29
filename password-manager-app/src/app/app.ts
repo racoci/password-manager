@@ -14,7 +14,8 @@ import { ConfigService, PasswordRecord, SecurityLevel } from './config.service';
 export class App {
   site = '';
   user = '';
-  master = '';
+  globalMaster = '';
+  serviceMaster = '';
   created = new Date().toISOString().substring(0,10);
   password = '';
   level: SecurityLevel = SecurityLevel.Low;
@@ -28,7 +29,8 @@ export class App {
 
   records: PasswordRecord[] = [];
   searchQuery = '';
-  showMaster = false;
+  showGlobalMaster = false;
+  showServiceMaster = false;
   copied = false;
 
   constructor(private gen: PasswordGeneratorService, private config: ConfigService) {}
@@ -55,20 +57,27 @@ export class App {
     this.user = rec.user;
     this.created = rec.created;
     this.level = rec.level;
-    this.generate(); // Tenta recalcular a senha instantaneamente se houver senha mestra digitada
+    this.generate(); // Recalcula automaticamente se ambas as senhas mestras estiverem preenchidas
   }
 
   deleteRecord(id: string, event: Event) {
-    event.stopPropagation(); // Evitar disparar o clique do card de seleção
-    if (confirm('Deseja realmente remover esta credencial salva?')) {
+    event.stopPropagation();
+    if (confirm('Deseja realmente remover este serviço salvo?')) {
       this.config.removeRecord(id);
       this.loadRecords();
     }
   }
 
   async generate() {
-    if (this.site && this.user && this.master) {
-      this.password = await this.gen.generate(this.site, this.user, this.master, this.created, this.level);
+    if (this.site && this.user && this.globalMaster && this.serviceMaster) {
+      this.password = await this.gen.generate(
+        this.site, 
+        this.user, 
+        this.globalMaster, 
+        this.serviceMaster, 
+        this.created, 
+        this.level
+      );
     } else {
       this.password = '';
     }
@@ -97,15 +106,13 @@ export class App {
     }, 2000);
   }
 
-  async exportConfig() {
-    const pw = prompt('Digite uma senha mestra para criptografar a exportação:') || '';
-    if (!pw) return;
-    const data = await this.config.export(pw);
-    const blob = new Blob([data], { type: 'text/plain' });
+  exportYaml() {
+    const data = this.config.exportYaml();
+    const blob = new Blob([data], { type: 'text/yaml;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'config.json.enc';
+    a.download = 'services.yaml';
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -113,16 +120,30 @@ export class App {
   async importConfig(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
-    const pw = prompt('Digite a senha mestra usada na criptografia da exportação:') || '';
-    if (!pw) return;
     const file = input.files[0];
+    const text = await file.text();
+
+    if (file.name.endsWith('.yaml') || file.name.endsWith('.yml') || text.trim().startsWith('services:')) {
+      this.config.importYaml(text);
+      this.loadRecords();
+      alert('Arquivo YAML público importado com sucesso!');
+      input.value = '';
+      return;
+    }
+
+    // Se for arquivo criptografado legado
+    const pw = prompt('Digite a senha mestra usada na criptografia do backup legado:') || '';
+    if (!pw) {
+      input.value = '';
+      return;
+    }
+
     try {
-      const text = await file.text();
       await this.config.import(pw, text.trim());
       this.loadRecords();
-      alert('Configuração importada com sucesso!');
+      alert('Configuração legada importada com sucesso!');
     } catch (e) {
-      alert('Erro ao descriptografar arquivo. Senha incorreta ou arquivo corrompido.');
+      alert('Erro ao descriptografar arquivo.');
     } finally {
       input.value = '';
     }

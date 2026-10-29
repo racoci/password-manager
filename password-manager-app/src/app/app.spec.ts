@@ -26,7 +26,8 @@ describe('App', () => {
     const app = fixture.componentInstance;
     app.site = 'github.com';
     app.user = 'user@test.com';
-    app.master = 'supersecret';
+    app.globalMaster = 'supersecretglobal';
+    app.serviceMaster = 'servicespecific';
     app.created = '2026-08-24';
 
     // Test Low level
@@ -48,5 +49,32 @@ describe('App', () => {
     const passUltra = app.password;
     expect(passUltra.length).toBe(32);
     expect(passUltra).not.toBe(passMedium);
+  });
+
+  it('should export and import public records in YAML symmetrically', () => {
+    const fixture = TestBed.createComponent(App);
+    const app = fixture.componentInstance;
+    const config = (app as any).config;
+
+    config.addRecord({
+      id: '1',
+      site: 'gitlab.com',
+      user: 'dev@gitlab.com',
+      created: '2026-01-01',
+      level: 3
+    });
+
+    const yaml = config.exportYaml();
+    expect(yaml).toContain('site: "gitlab.com"');
+    expect(yaml).toContain('user: "dev@gitlab.com"');
+    expect(yaml).toContain('security_level: 3');
+
+    // Symmetrical import
+    config.importYaml(yaml);
+    const records = config.getRecords();
+    const imported = records.find((r: any) => r.site === 'gitlab.com');
+    expect(imported).toBeDefined();
+    expect(imported?.user).toBe('dev@gitlab.com');
+    expect(imported?.level).toBe(3);
   });
 });

@@ -65,6 +65,49 @@ export class ConfigService {
     this.config.records = this.config.records.filter(r => r.id !== id);
   }
 
+  exportYaml(): string {
+    let yaml = 'services:\n';
+    for (const rec of this.config.records) {
+      yaml += `  - site: "${rec.site}"\n`;
+      yaml += `    user: "${rec.user}"\n`;
+      yaml += `    updated: "${rec.created}"\n`;
+      yaml += `    security_level: ${rec.level}\n`;
+    }
+    return yaml;
+  }
+
+  importYaml(yamlText: string) {
+    const lines = yamlText.split('\n');
+    let currentRec: Partial<PasswordRecord> | null = null;
+    const records: PasswordRecord[] = [];
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('- site:')) {
+        if (currentRec && currentRec.site && currentRec.user) {
+          records.push(currentRec as PasswordRecord);
+        }
+        currentRec = {
+          id: Date.now().toString() + Math.random().toString().substring(2, 6),
+          site: trimmed.replace('- site:', '').replace(/"/g, '').trim(),
+          level: SecurityLevel.Low
+        };
+      } else if (currentRec && trimmed.startsWith('user:')) {
+        currentRec.user = trimmed.replace('user:', '').replace(/"/g, '').trim();
+      } else if (currentRec && trimmed.startsWith('updated:')) {
+        currentRec.created = trimmed.replace('updated:', '').replace(/"/g, '').trim();
+      } else if (currentRec && trimmed.startsWith('security_level:')) {
+        currentRec.level = parseInt(trimmed.replace('security_level:', '').trim(), 10) || SecurityLevel.Low;
+      }
+    }
+
+    if (currentRec && currentRec.site && currentRec.user) {
+      records.push(currentRec as PasswordRecord);
+    }
+
+    this.config.records = records;
+  }
+
   async export(password: string): Promise<string> {
     const data = JSON.stringify(this.config);
     const enc = new TextEncoder().encode(data);

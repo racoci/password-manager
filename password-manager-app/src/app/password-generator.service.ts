@@ -8,12 +8,13 @@ export class PasswordGeneratorService {
   async generate(
     site: string, 
     user: string, 
-    master: string, 
+    globalMaster: string, 
+    serviceMaster: string, 
     created: string, 
     level: SecurityLevel = SecurityLevel.Low
   ): Promise<string> {
-    // Incluir o nível de segurança na semente para mudar a senha completamente a cada nível
-    const data = `${site}|${user}|${created}|${master}|${level}`;
+    // Incluir o nível de segurança e ambas as senhas mnemônicas na semente
+    const data = `${site}|${user}|${created}|${globalMaster}|${serviceMaster}|${level}`;
     const enc = new TextEncoder().encode(data);
     let hash = await crypto.subtle.digest('SHA-256', enc);
     
