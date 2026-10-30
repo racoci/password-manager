@@ -59,4 +59,25 @@ class PasswordGeneratorTest {
         assertEquals("admin@aws.com", parsed[1].user)
         assertEquals(SecurityLevel.Ultra, parsed[1].level)
     }
+
+    @Test
+    fun testSymmetricalQrSyncEncryptionAndDecompression() {
+        val qrSync = com.determina.pass.domain.QrSync()
+        val records = listOf(
+            ServiceRecord("1", "github.com", "user@test.com", "2026-10-30", SecurityLevel.Medium),
+            ServiceRecord("2", "portal.internal", "root", "2026-10-20", SecurityLevel.Ultra)
+        )
+        val passphrase = "MobilePassphrase456!"
+
+        val payload = qrSync.encryptAndEncode(records, passphrase)
+        assert(payload.startsWith("DP1:"))
+
+        val decrypted = qrSync.decodeAndDecrypt(payload, passphrase)
+        assertEquals(2, decrypted.size)
+        assertEquals("github.com", decrypted[0].site)
+        assertEquals("user@test.com", decrypted[0].user)
+        assertEquals(SecurityLevel.Medium, decrypted[0].level)
+        assertEquals("portal.internal", decrypted[1].site)
+        assertEquals(SecurityLevel.Ultra, decrypted[1].level)
+    }
 }

@@ -23,6 +23,9 @@
 - [ ] Task: Implement File Picker Integration for Android & iOS
   - Automated Testing: Mock file provider contract test
   - Documentation: `password-manager-mobile/docs/file_picker.md`
+- [x] Task: Encrypted & Compressed QR Code Export/Import Protocol (Web & Mobile)
+  - Automated Testing: Symmetrical encryption, compression, and QR encoding unit tests
+  - Documentation: `password-manager-app/src/app/qr-protocol.md`
 
 ## Phase 4: Symmetrical Cross-Validation & Release Packaging
 - [ ] Task: Cross-Platform Symmetrical Verification Suite

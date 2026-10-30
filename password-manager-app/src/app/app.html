@@ -155,6 +155,11 @@
             <span>{{ copied ? '✅ Copiado!' : '📋 Copiar' }}</span>
           </button>
         </div>
+        <div class="pwd-actions">
+          <button type="button" (click)="exportQr(true)" class="btn btn-qr-share">
+            <span>📲 Transferir Este Serviço via QR Code</span>
+          </button>
+        </div>
         <p class="pwd-notice">Esta senha é idêntica sempre que você usar os mesmos parâmetros acima.</p>
       </div>
     </section>
@@ -214,7 +219,26 @@
         </div>
       </div>
 
-      <!-- Footer / Ferramentas de Backup e Exportação -->
+      <!-- Seção QR Code Sync Criptografado & Comprimido -->
+      <div class="backup-tools qr-sync-tools">
+        <h3 class="tool-title">🔐 Transferência Segura via QR Code</h3>
+        <p class="tool-desc">
+          Transfira serviços entre dispositivos sem usar cabos ou internet. Os dados são 
+          <strong>extremamente compactados e criptografados com AES-256-GCM</strong>.
+        </p>
+
+        <div class="backup-actions">
+          <button (click)="exportQr(false)" class="btn btn-primary flex-1">
+            <span>📲 Exportar QR Code</span>
+          </button>
+          
+          <button (click)="openScanModal()" class="btn btn-secondary flex-1">
+            <span>📷 Escanear QR Code</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer / Ferramentas de Backup e Exportação YAML -->
       <div class="backup-tools">
         <h3 class="tool-title">📄 Exportação / Importação YAML</h3>
         <p class="tool-desc">Exporte ou importe a lista de serviços em arquivo YAML legível contendo apenas metadados públicos (site, usuário, data e nível de segurança).</p>
@@ -231,5 +255,56 @@
         </div>
       </div>
     </section>
+  </div>
+
+  <!-- Modal de Exibição do QR Code Gerado -->
+  <div *ngIf="qrModalOpen" class="modal-backdrop" (click)="closeQrModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ qrTitle }}</h3>
+        <button (click)="closeQrModal()" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body text-center">
+        <div class="qr-image-wrapper">
+          <img [src]="qrDataUrl" alt="QR Code Criptografado" class="qr-image" />
+        </div>
+        <p class="qr-instruction">
+          🔒 <strong>Criptografado & Compactado:</strong> Este QR Code contém os dados comprimidos e protegidos com chave AES-GCM. Escaneie-o no outro dispositivo e informe a mesma senha/PIN criada.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button (click)="closeQrModal()" class="btn btn-primary">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Escaneamento de QR Code (Câmera ou Imagem) -->
+  <div *ngIf="scanModalOpen" class="modal-backdrop" (click)="closeScanModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>📷 Escanear QR Code Criptografado</h3>
+        <button (click)="closeScanModal()" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="scan-status-text">{{ scanStatus }}</p>
+        
+        <div class="scanner-viewport">
+          <video #scannerVideo class="scanner-video"></video>
+          <canvas #scannerCanvas class="hidden-canvas"></canvas>
+          <div class="scanner-crosshair"></div>
+        </div>
+
+        <div class="scanner-fallback">
+          <p class="fallback-label">Sem câmera? Carregue uma captura de tela do QR Code:</p>
+          <label class="btn btn-secondary upload-qr-btn">
+            <span>🖼️ Escolher Imagem do QR Code</span>
+            <input type="file" (change)="handleQrImageUpload($event)" accept="image/*" class="hidden-file-input" />
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button (click)="closeScanModal()" class="btn btn-secondary">Cancelar</button>
+      </div>
+    </div>
   </div>
 </div>

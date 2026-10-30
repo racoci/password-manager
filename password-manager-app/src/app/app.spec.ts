@@ -77,4 +77,43 @@ describe('App', () => {
     expect(imported?.user).toBe('dev@gitlab.com');
     expect(imported?.level).toBe(3);
   });
+
+  it('should encrypt, compress, and symmetrically decrypt records via QR payload', async () => {
+    const fixture = TestBed.createComponent(App);
+    const app = fixture.componentInstance;
+    const qrSync = (app as any).qrSync;
+
+    const sampleRecords = [
+      { id: '1', site: 'github.com', user: 'alice@test.com', created: '2026-10-30', level: 2 },
+      { id: '2', site: 'amazon.com', user: 'bob@test.com', created: '2026-10-25', level: 4 }
+    ];
+
+    const passphrase = 'SecretTransferPassword123!';
+
+    // Encrypt and compress
+    const qrPayload = await qrSync.encryptAndEncode(sampleRecords, passphrase);
+    expect(qrPayload.startsWith('DP1:')).toBeTrue();
+
+    // Verify it generates a valid QR data URL
+    const qrDataUrl = await qrSync.generateQrDataUrl(qrPayload);
+    expect(qrDataUrl.startsWith('data:image/png;base64,')).toBeTrue();
+
+    // Decrypt and decompress
+    const decrypted = await qrSync.decodeAndDecrypt(qrPayload, passphrase);
+    expect(decrypted.length).toBe(2);
+    expect(decrypted[0].site).toBe('github.com');
+    expect(decrypted[0].user).toBe('alice@test.com');
+    expect(decrypted[0].level).toBe(2);
+    expect(decrypted[1].site).toBe('amazon.com');
+    expect(decrypted[1].level).toBe(4);
+
+    // Verify wrong password fails
+    let failed = false;
+    try {
+      await qrSync.decodeAndDecrypt(qrPayload, 'WrongPassword!');
+    } catch {
+      failed = true;
+    }
+    expect(failed).toBeTrue();
+  });
 });
